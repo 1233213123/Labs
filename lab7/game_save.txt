@@ -1,0 +1,9 @@
+2
+Player
+Hero
+100
+1
+Entity
+Goblin
+50
+1
