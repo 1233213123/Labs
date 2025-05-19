@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-
 template<typename T>
 class Logger {
 public:
@@ -15,7 +14,6 @@ public:
         file << message << std::endl;
     }
 };
-
 
 class Inventory {
 private:
@@ -50,9 +48,9 @@ public:
             throw std::runtime_error(name + " погиб!");
         }
     }
-    
+
     void attackEnemy(class Enemy& monster);
-    
+
     void gainExperience(int exp) {
         experience += exp;
         if (experience >= 100) {
@@ -62,7 +60,7 @@ public:
             Logger<std::string>::log(name + " повысил уровень до " + std::to_string(level));
         }
     }
-    
+
     void heal(int amount) {
         health += amount;
         if (health > 100) {
@@ -171,19 +169,35 @@ public:
         Logger<std::string>::log("Начало битвы с " + monster.getName());
         try {
             while (true) {
-                player.attackEnemy(monster);
-                player.displayInfo();
-                monster.displayInfo();
+                std::cout << "Ваш ход.  (1) Атаковать  (2) Показать инвентарь  (3) Выйти из битвы: ";
+                int choice;
+                std::cin >> choice;
 
-                if(monster.getHealth() <= 0) {
-                  std::cout << monster.getName() << " повержен!" << std::endl;
-                  player.gainExperience(50);
-                  Logger<std::string>::log(monster.getName() + " повержен!");
-                  break;
+                if (choice == 1) {
+                    player.attackEnemy(monster);
+                    if (monster.getHealth() <= 0) {
+                        std::cout << monster.getName() << " повержен!" << std::endl;
+                        player.gainExperience(50);
+                        Logger<std::string>::log(monster.getName() + " повержен!");
+                        break;
+                    }
+                } else if (choice == 2) {
+                    player.showInventory();
+                    continue;
+                } else if (choice == 3) {
+                    std::cout << "Вы сбежали из битвы." << std::endl;
+                    Logger<std::string>::log("Игрок сбежал из битвы с " + monster.getName());
+                    return;
+                } else {
+                    std::cout << "Неверный выбор. Попробуйте еще раз." << std::endl;
+                    continue;
                 }
 
                 player.takeDamage(monster.getAttack() - player.getDefense());
-                if(player.getHealth() <= 0){
+                std::cout << monster.getName() << " атакует " << player.getName() << "!" << std::endl;
+                player.displayInfo();
+                monster.displayInfo();
+                if (player.getHealth() <= 0) {
                     break;
                 }
             }
@@ -218,7 +232,6 @@ public:
         std::string name;
         int health, attack, defense, level, experience;
 
-
         std::getline(file, name);
         file >> health >> attack >> defense >> level >> experience;
         file.ignore();
@@ -229,7 +242,6 @@ public:
         player.setDefense(defense);
         player.setLevel(level);
         player.setExperience(experience);
-
 
         std::string item;
         while (file >> item) {
@@ -242,22 +254,75 @@ public:
     Character& getPlayer() {
         return player;
     }
+
+    void gameLoop() {
+        int choice;
+        while (true) {
+            std::cout << "\nВыберите действие:\n";
+            std::cout << "1. Начать битву с скелетом\n";
+            std::cout << "2. Начать битву с гоблином\n";
+            std::cout << "3. Добавить предмет в инвентарь\n";
+            std::cout << "4. Показать инвентарь\n";
+            std::cout << "5. Сохранить игру\n";
+            std::cout << "6. Загрузить игру\n";
+            std::cout << "7. Выйти из игры\n";
+            std::cout << "Ваш выбор: ";
+            std::cin >> choice;
+
+            switch (choice) {
+                case 1: {
+                    Skeleton skeleton;
+                    battle(skeleton);
+                    break;
+                }
+                case 2: {
+                    Goblin goblin;
+                    battle(goblin);
+                    break;
+                }
+                case 3: {
+                    std::string newItem;
+                    std::cout << "Введите название предмета: ";
+                    std::cin >> newItem;
+                    player.getInventory().addItem(newItem);
+                    break;
+                }
+                case 4:
+                    player.showInventory();
+                    break;
+                case 5:
+                    saveGame();
+                    break;
+                case 6:
+                    try {
+                        loadGame();
+                    } catch (const std::runtime_error& e) {
+                        std::cerr << "Ошибка загрузки: " << e.what() << std::endl;
+                        Logger<std::string>::log("Ошибка загрузки: " + std::string(e.what()));
+                    }
+                    break;
+                case 7:
+                    std::cout << "Выход из игры.\n";
+                    Logger<std::string>::log("Выход из игры.");
+                    return;
+                default:
+                    std::cout << "Неверный выбор. Попробуйте еще раз.\n";
+            }
+        }
+    }
 };
 
 int main() {
     try {
-        Game game("Герой");
+        std::string playerName;
+        std::cout << "Введите имя вашего героя: ";
+        std::cin >> playerName;
+
+        Game game(playerName);
         game.start();
 
-        game.loadGame(); // Попытка загрузить игру
+        game.gameLoop();
 
-        Skeleton skelet;
-        game.battle(skelet);
-
-        game.saveGame(); // Сохраняем игру
-
-        game.getPlayer().getInventory().addItem("Зелье");
-        game.getPlayer().showInventory();
 
     } catch (const std::runtime_error& error) {
         std::cerr << "Ошибка: " << error.what() << std::endl;
