@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -280,20 +279,20 @@ int main() {
         std::cerr << "Ошибка при загрузке данных: " << e.what() << std::endl;
     }
 
-    system.addUser(std::unique_ptr<Student>(new Student("Иван Иванов", 12345, 1, "ИВТ-21")));
-    system.addUser(std::unique_ptr<Teacher>(new Teacher("Петр Петров", 67890, 5, "Информатика")));
-    system.addUser(std::unique_ptr<Administrator>(new Administrator("Сидор Сидоров", 11223, 10, "Ректор")));
-
-    system.addResource(Resource("Аудитория 101", 2));
-    system.addResource(Resource("Библиотека", 1));
-    system.addResource(Resource("Лаборатория", 5));
+   
 
     system.sortUsersByAccessLevel();
     system.displayAllUsers();
 
-    std::cout << "Доступ к аудитории 101 для Ивана Иванова: " << (system.checkAccess(12345, "Аудитория 101") ? "Разрешен" : "Запрещен") << std::endl;
-    std::cout << "Доступ к лаборатории для Ивана Иванова: " << (system.checkAccess(12345, "Лаборатория") ? "Разрешен" : "Запрещен") << std::endl;
-    std::cout << "Доступ к лаборатории для Петра Петрова: " << (system.checkAccess(67890, "Лаборатория") ? "Разрешен" : "Запрещен") << std::endl;
+    
+    int userId1 = 12345; 
+    int userId2 = 67890; 
+    std::string resourceName1 = "Аудитория 101"; 
+    std::string resourceName2 = "Лаборатория";  
+
+    std::cout << "Доступ к " << resourceName1 << " для пользователя с ID " << userId1 << ": " << (system.checkAccess(userId1, resourceName1) ? "Разрешен" : "Запрещен") << std::endl;
+    std::cout << "Доступ к " << resourceName2 << " для пользователя с ID " << userId1 << ": " << (system.checkAccess(userId1, resourceName2) ? "Разрешен" : "Запрещен") << std::endl;
+    std::cout << "Доступ к " << resourceName2 << " для пользователя с ID " << userId2 << ": " << (system.checkAccess(userId2, resourceName2) ? "Разрешен" : "Запрещен") << std::endl;
 
     try {
         system.saveToFile("data.txt");
